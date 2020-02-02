@@ -16,3 +16,4 @@ walkdir = "2.2.7"
 [dependencies]
 clap = "2.33.0"
 structopt = "0.3.9"
+failure = "0.1.6"
