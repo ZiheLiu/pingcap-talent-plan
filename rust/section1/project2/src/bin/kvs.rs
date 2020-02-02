@@ -1,6 +1,9 @@
 use std::process;
 use structopt::StructOpt;
 
+use kvs::{KvStore, KvsError, Result};
+use std::env::current_dir;
+
 #[derive(Debug, StructOpt)]
 enum Config {
     #[structopt(about = "Set the value of a string key to a string")]
@@ -22,21 +25,33 @@ enum Config {
     },
 }
 
-fn main() {
+fn main() -> Result<()> {
     let config = Config::from_args();
 
     match config {
-        Config::Set { .. } => {
-            eprintln!("unimplemented");
-            process::exit(1);
+        Config::Set { key, value } => {
+            let mut store = KvStore::open(current_dir()?)?;
+            store.set(key, value)?;
         }
-        Config::Get { .. } => {
-            eprintln!("unimplemented");
-            process::exit(1);
+        Config::Get { key } => {
+            let mut store = KvStore::open(current_dir()?)?;
+            match store.get(key)? {
+                Some(value) => println!("{}", value),
+                None => println!("Key not found"),
+            }
         }
-        Config::Rm { .. } => {
-            eprintln!("unimplemented");
-            process::exit(1);
+        Config::Rm { key } => {
+            let mut store = KvStore::open(current_dir()?)?;
+            match store.remove(key) {
+                Ok(()) => {}
+                Err(KvsError::KeyNotFound) => {
+                    println!("{}", KvsError::KeyNotFound);
+                    process::exit(1);
+                }
+                Err(e) => return Err(e),
+            }
         }
     }
+
+    Ok(())
 }

@@ -2,8 +2,8 @@
 
 //! A simple key/value store in memory.
 
-pub use kv::KvStore;
 pub use error::{KvsError, Result};
+pub use kv::KvStore;
 
-mod kv;
 mod error;
+mod kv;
