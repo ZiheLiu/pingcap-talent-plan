@@ -1,6 +1,4 @@
-pub struct KvStore {
-
-}
+pub struct KvStore {}
 
 impl KvStore {
     pub fn new() -> KvStore {

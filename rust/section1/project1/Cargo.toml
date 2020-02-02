@@ -12,3 +12,4 @@ assert_cmd = "0.11.0"
 predicates = "1.0.0"
 
 [dependencies]
+clap = "2.33.0"
