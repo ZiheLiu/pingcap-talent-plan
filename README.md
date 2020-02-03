@@ -5,9 +5,7 @@
 ### Section 1
 
 - [x] [project 1](./rust/section1/project1)
-- [ ] [project 2](./rust/section1/project2)
+- [x] [project 2](./rust/section1/project2)
 
-
-
-TODO
+Doc: TODO
 
