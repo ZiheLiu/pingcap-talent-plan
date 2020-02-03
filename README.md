@@ -4,7 +4,8 @@
 
 ### Section 1
 
-- [ ] [project 1](./rust/section1/project1)
+- [x] [project 1](./rust/section1/project1)
+- [ ] [project 2](./rust/section1/project2)
 
 
 

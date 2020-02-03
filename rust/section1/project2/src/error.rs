@@ -16,6 +16,10 @@ pub enum KvsError {
     /// Key not found error.
     #[fail(display = "Key not found")]
     KeyNotFound,
+
+    /// Key not found error.
+    #[fail(display = "Unexpected command type")]
+    UnexpectedCommandType,
 }
 
 impl From<io::Error> for KvsError {

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -8,7 +8,7 @@ use serde_json;
 
 use crate::{KvsError, Result};
 use std::fs::OpenOptions;
-use std::io::Write;
+use std::io::{Read, Seek, SeekFrom, Write};
 
 const DATA_FILENAME: &str = "0.log";
 
@@ -19,7 +19,7 @@ pub struct KvStore {
     path: PathBuf,
     writer: io::BufWriter<fs::File>,
     reader: io::BufReader<fs::File>,
-    map: HashMap<String, String>,
+    index: BTreeMap<String, CommandFilePointer>,
 }
 
 impl KvStore {
@@ -46,7 +46,7 @@ impl KvStore {
             path,
             writer,
             reader,
-            map: HashMap::new(),
+            index: BTreeMap::new(),
         })
     }
 
@@ -75,7 +75,18 @@ impl KvStore {
     pub fn get(&mut self, key: String) -> Result<Option<String>> {
         self.load_data()?;
 
-        Ok(self.map.get(&key).cloned())
+        match self.index.get(&key) {
+            Some(pos) => {
+                self.reader.seek(SeekFrom::Start(pos.offset))?;
+                let cmd_reader = (&mut self.reader).take(pos.len);
+                if let Command::Set { value, .. } = serde_json::from_reader(cmd_reader)? {
+                    Ok(Some(value))
+                } else {
+                    Err(KvsError::UnexpectedCommandType)
+                }
+            }
+            None => Ok(None),
+        }
     }
 
     /// Remove a given `key`.
@@ -88,7 +99,7 @@ impl KvStore {
     pub fn remove(&mut self, key: String) -> Result<()> {
         self.load_data()?;
 
-        if self.map.contains_key(&key) {
+        if self.index.contains_key(&key) {
             let cmd = Command::Remove { key };
             serde_json::to_writer(&mut self.writer, &cmd)?;
             self.writer.flush()?;
@@ -101,19 +112,35 @@ impl KvStore {
 
     /// Load data from disk into `HashMap`.
     fn load_data(&mut self) -> Result<()> {
-        let iterator =
+        let mut pre_pos = self.reader.seek(SeekFrom::Start(0))?;
+        let mut iterator =
             serde_json::Deserializer::from_reader(&mut self.reader).into_iter::<Command>();
-        for cmd in iterator {
+        while let Some(cmd) = iterator.next() {
+            let pos = iterator.byte_offset() as u64;
             match cmd? {
-                Command::Set { key, value } => self.map.insert(key, value),
-                Command::Remove { key } => self.map.remove(&key),
+                Command::Set { key, .. } => self.index.insert(
+                    key,
+                    CommandFilePointer {
+                        offset: pre_pos,
+                        len: pos - pre_pos,
+                    },
+                ),
+                Command::Remove { key } => self.index.remove(&key),
             };
+            pre_pos = pos;
         }
 
         Ok(())
     }
 }
 
+/// The pointer of a command in the persistence file.
+struct CommandFilePointer {
+    offset: u64,
+    len: u64,
+}
+
+/// The command which needs to be persisted in files.
 #[derive(Serialize, Deserialize)]
 enum Command {
     Set { key: String, value: String },
