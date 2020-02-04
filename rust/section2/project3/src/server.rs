@@ -31,30 +31,21 @@ impl<T: KvsEngine> KvsServer<T> {
                         continue;
                     }
 
-                    let command = command.unwrap();
-                    match command {
-                        Request::Set { key, value } => {
-                            let res = match self.engine.set(key, value) {
-                                Ok(()) => Response::new_success(None),
-                                Err(e) => Response::new_error(e),
-                            };
-                            bincode::serialize_into(&mut stream, &res)?;
-                        }
-                        Request::Remove { key } => {
-                            let res = match self.engine.remove(key) {
-                                Ok(()) => Response::new_success(None),
-                                Err(e) => Response::new_error(e),
-                            };
-                            bincode::serialize_into(&mut stream, &res)?;
-                        }
-                        Request::Get { key } => {
-                            let res = match self.engine.get(key) {
-                                Ok(value) => Response::new_success(value),
-                                Err(e) => Response::new_error(e),
-                            };
-                            bincode::serialize_into(&mut stream, &res)?;
-                        }
-                    }
+                    let res = match command.unwrap() {
+                        Request::Set { key, value } => match self.engine.set(key, value) {
+                            Ok(()) => Response::new_success(None),
+                            Err(e) => Response::new_error(e),
+                        },
+                        Request::Remove { key } => match self.engine.remove(key) {
+                            Ok(()) => Response::new_success(None),
+                            Err(e) => Response::new_error(e),
+                        },
+                        Request::Get { key } => match self.engine.get(key) {
+                            Ok(value) => Response::new_success(value),
+                            Err(e) => Response::new_error(e),
+                        },
+                    };
+                    bincode::serialize_into(&mut stream, &res)?;
                 }
                 Err(e) => {
                     warn!("Tcp accept error: {}", e);

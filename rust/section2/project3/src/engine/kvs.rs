@@ -19,7 +19,6 @@ const COMPACTION_THRESHOLD: u64 = 1024 * 256;
 /// The `KvStore` stores string key/value pairs.
 ///
 /// It persists pairs into files, containing json string one by one. Each json string represents a pair.
-///
 pub struct KvStore {
     path: PathBuf,
     writer: io::BufWriter<fs::File>,
