@@ -2,9 +2,7 @@ use super::KvsEngine;
 use crate::KvsError;
 
 /// The implementation for `KvsEngine` for the sled storage engine.
-pub struct SledKvsEngine {
-
-}
+pub struct SledKvsEngine {}
 
 impl KvsEngine for SledKvsEngine {
     fn set(&mut self, key: String, value: String) -> Result<(), KvsError> {

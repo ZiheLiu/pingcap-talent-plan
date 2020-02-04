@@ -20,6 +20,10 @@ pub enum KvsError {
     /// Key not found error.
     #[fail(display = "Unexpected command type")]
     UnexpectedCommandType,
+
+    /// Key not found error.
+    #[fail(display = "Different engine type from the previous one")]
+    WrongEngineType,
 }
 
 impl From<io::Error> for KvsError {

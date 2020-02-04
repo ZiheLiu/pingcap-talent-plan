@@ -2,9 +2,7 @@ use super::KvsEngine;
 use crate::KvsError;
 
 /// Default implementation by hand for `KvsEngine`.
-pub struct KvStore {
-
-}
+pub struct KvStore {}
 
 impl KvsEngine for KvStore {
     fn set(&mut self, key: String, value: String) -> Result<(), KvsError> {
