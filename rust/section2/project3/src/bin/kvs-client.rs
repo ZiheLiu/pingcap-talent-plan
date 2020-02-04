@@ -1,10 +1,9 @@
-use std::env::current_dir;
 use std::net;
 use std::process;
 
 use structopt::StructOpt;
 
-use kvs::{KvStore, KvsError, Result};
+use kvs::{KvsClient, KvsError, Result};
 
 #[derive(Debug, StructOpt)]
 enum Config {
@@ -52,26 +51,26 @@ enum Config {
 }
 
 fn main() -> Result<()> {
-    let config = Config::from_args();
+    let config: Config = Config::from_args();
 
     match config {
-        Config::Set { key, value, .. } => {
-            let mut store = KvStore::open(current_dir()?)?;
-            store.set(key, value)?;
+        Config::Set { key, value, addr } => {
+            let mut client = KvsClient::new(addr)?;
+            client.set(key, value)?;
         }
-        Config::Get { key, .. } => {
-            let mut store = KvStore::open(current_dir()?)?;
-            match store.get(key)? {
+        Config::Get { key, addr } => {
+            let mut client = KvsClient::new(addr)?;
+            match client.get(key)? {
                 Some(value) => println!("{}", value),
                 None => println!("Key not found"),
             }
         }
-        Config::Rm { key, .. } => {
-            let mut store = KvStore::open(current_dir()?)?;
-            match store.remove(key) {
+        Config::Rm { key, addr } => {
+            let mut client = KvsClient::new(addr)?;
+            match client.remove(key) {
                 Ok(()) => {}
-                Err(KvsError::KeyNotFound) => {
-                    println!("{}", KvsError::KeyNotFound);
+                Err(KvsError::RemoteError(err_msg)) => {
+                    eprintln!("{}", err_msg);
                     process::exit(1);
                 }
                 Err(e) => return Err(e),

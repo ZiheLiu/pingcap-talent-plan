@@ -1,5 +1,6 @@
-use failure::Fail;
 use std::io;
+
+use failure::Fail;
 
 /// Error type for kvs.
 #[derive(Fail, Debug)]
@@ -9,9 +10,13 @@ pub enum KvsError {
     #[fail(display = "{}", _0)]
     Io(#[cause] io::Error),
 
-    /// Serde serialization or deserialization error.
+    /// Serialization for serde_json or deserialization error.
     #[fail(display = "{}", _0)]
     Serde(#[cause] serde_json::Error),
+
+    /// Serialization for bincode or deserialization error.
+    #[fail(display = "{}", _0)]
+    Bincode(#[cause] bincode::Error),
 
     /// Key not found error.
     #[fail(display = "Key not found")]
@@ -24,6 +29,10 @@ pub enum KvsError {
     /// Key not found error.
     #[fail(display = "Different engine type from the previous one")]
     WrongEngineType,
+
+    /// Error occurring in remote.
+    #[fail(display = "Error occurring in remote")]
+    RemoteError(String),
 }
 
 impl From<io::Error> for KvsError {
@@ -35,6 +44,12 @@ impl From<io::Error> for KvsError {
 impl From<serde_json::Error> for KvsError {
     fn from(e: serde_json::Error) -> Self {
         KvsError::Serde(e)
+    }
+}
+
+impl From<bincode::Error> for KvsError {
+    fn from(e: bincode::Error) -> Self {
+        KvsError::Bincode(e)
     }
 }
 

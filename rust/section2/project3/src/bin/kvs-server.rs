@@ -4,7 +4,7 @@ use std::net;
 use clap::arg_enum;
 use structopt::StructOpt;
 
-use kvs::{KvsError, Result};
+use kvs::{KvStore, KvsError, KvsServer, Result};
 use log::{info, warn, LevelFilter};
 use std::env::current_dir;
 
@@ -25,25 +25,25 @@ struct Config {
         long,
         help = "Sets the storage engine",
         value_name = "ENGINE-NAME",
-        possible_values = &Engine::variants(),
+        possible_values = &EngineType::variants(),
         case_insensitive = true,
     )]
-    engine: Option<Engine>,
+    engine: Option<EngineType>,
 }
 
 arg_enum! {
     #[allow(non_camel_case_types)]
     #[derive(Debug, PartialEq)]
-    enum Engine {
+    enum EngineType {
         kvs,
         sled
     }
 }
 
-const DEFAULT_ENGINE: Engine = Engine::kvs;
+const DEFAULT_ENGINE: EngineType = EngineType::kvs;
 const CONFIG_FILENAME: &str = "engine_config";
 
-impl Engine {
+impl EngineType {
     /// Get the previous engine type from disk.
     ///
     /// If the `CONFIG_FILENAME` file exists and the content is valid `Engine`, return it.
@@ -52,7 +52,7 @@ impl Engine {
     /// # Errors
     ///
     /// It propagates I/O errors.
-    fn previous_engine() -> Result<Option<Engine>> {
+    fn previous_engine_type() -> Result<Option<EngineType>> {
         let engine_config_path = current_dir()?.join(CONFIG_FILENAME);
         if !engine_config_path.exists() {
             Ok(None)
@@ -76,8 +76,8 @@ impl Engine {
     ///
     /// # Errors
     /// It propagates I/O errors or returns `WrongEngineType` error..
-    fn new(engine_op: Option<Engine>) -> Result<Engine> {
-        match Self::previous_engine()? {
+    fn new(engine_op: Option<EngineType>) -> Result<EngineType> {
+        match Self::previous_engine_type()? {
             Some(pre_engine) => match engine_op {
                 Some(engine) => {
                     if engine != pre_engine {
@@ -113,12 +113,21 @@ fn main() -> Result<()> {
         .init();
 
     let config: Config = Config::from_args();
-    let engine = Engine::new(config.engine)?;
+    let engine = EngineType::new(config.engine)?;
     engine.dump_config()?;
 
     info!("Version: {}", env!("CARGO_PKG_VERSION"));
     info!("Storage Engine: {}", engine);
     info!("Socket Address: {}", config.addr);
+
+    let engine = match engine {
+        EngineType::kvs => KvStore::open(current_dir()?)?,
+        EngineType::sled => {
+            unimplemented!("Sled");
+        }
+    };
+    let mut server = KvsServer::new(config.addr, engine);
+    server.start()?;
 
     Ok(())
 }
