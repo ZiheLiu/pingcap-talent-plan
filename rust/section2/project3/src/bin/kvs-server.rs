@@ -4,7 +4,7 @@ use std::net;
 use clap::arg_enum;
 use structopt::StructOpt;
 
-use kvs::{KvStore, KvsError, KvsServer, Result};
+use kvs::{KvStore, KvsEngine, KvsError, KvsServer, Result, SledKvsEngine};
 use log::{info, warn, LevelFilter};
 use std::env::current_dir;
 
@@ -120,13 +120,16 @@ fn main() -> Result<()> {
     info!("Storage Engine: {}", engine);
     info!("Socket Address: {}", config.addr);
 
-    let engine = match engine {
-        EngineType::kvs => KvStore::open(current_dir()?)?,
+    match engine {
+        EngineType::kvs => start_server(config.addr, KvStore::open(current_dir()?)?),
         EngineType::sled => {
-            unimplemented!("Sled");
+            start_server(config.addr, SledKvsEngine::open(current_dir()?.as_path())?)
         }
-    };
-    let mut server = KvsServer::new(config.addr, engine);
+    }
+}
+
+fn start_server(addr: net::SocketAddr, engine: impl KvsEngine) -> Result<()> {
+    let mut server = KvsServer::new(addr, engine);
     server.start()?;
 
     Ok(())

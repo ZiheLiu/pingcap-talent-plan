@@ -1,4 +1,5 @@
 use std::io;
+use std::string;
 
 use failure::Fail;
 
@@ -18,6 +19,14 @@ pub enum KvsError {
     #[fail(display = "{}", _0)]
     Bincode(#[cause] bincode::Error),
 
+    /// Key or value is invalid UTF-8 sequence
+    #[fail(display = "UTF-8 error: {}", _0)]
+    Utf8(#[cause] string::FromUtf8Error),
+
+    /// Sled error.
+    #[fail(display = "{}", _0)]
+    Sled(#[cause] sled::Error),
+
     /// Key not found error.
     #[fail(display = "Key not found")]
     KeyNotFound,
@@ -30,7 +39,7 @@ pub enum KvsError {
     #[fail(display = "Different engine type from the previous one")]
     WrongEngineType,
 
-    /// Error occurring in remote.
+    /// Error occurring in remote with a string error message.
     #[fail(display = "Error occurring in remote")]
     RemoteError(String),
 }
@@ -50,6 +59,18 @@ impl From<serde_json::Error> for KvsError {
 impl From<bincode::Error> for KvsError {
     fn from(e: bincode::Error) -> Self {
         KvsError::Bincode(e)
+    }
+}
+
+impl From<string::FromUtf8Error> for KvsError {
+    fn from(e: string::FromUtf8Error) -> Self {
+        KvsError::Utf8(e)
+    }
+}
+
+impl From<sled::Error> for KvsError {
+    fn from(e: sled::Error) -> Self {
+        KvsError::Sled(e)
     }
 }
 
