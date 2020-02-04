@@ -9,3 +9,9 @@
 
 Doc: TODO
 
+### Section 2
+
+- [ ] [project 3](./rust/section2/project3)
+- [ ] [project 4]
+
+Doc: TODO
