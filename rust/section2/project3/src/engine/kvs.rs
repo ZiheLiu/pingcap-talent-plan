@@ -7,9 +7,9 @@ use std::io::{BufReader, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 use crate::{KvsEngine, KvsError, Result};
+use serde_cbor::ser::IoWrite;
 
 const DATA_FILE_EX: &str = "log";
 const COMPACTION_THRESHOLD: u64 = 1024 * 256;
@@ -18,7 +18,7 @@ const COMPACTION_THRESHOLD: u64 = 1024 * 256;
 ///
 /// The `KvStore` stores string key/value pairs.
 ///
-/// It persists pairs into files, containing json string one by one. Each json string represents a pair.
+/// It persists pairs into files, containing binary `Command` object one by one.
 pub struct KvStore {
     path: PathBuf,
     writer: io::BufWriter<fs::File>,
@@ -44,7 +44,9 @@ impl KvsEngine for KvStore {
             key: key.clone(),
             value,
         };
-        serde_json::to_writer(&mut self.writer, &cmd)?;
+        cmd.serialize(
+            &mut serde_cbor::Serializer::new(&mut IoWrite::new(&mut self.writer)).packed_format(),
+        )?;
         self.writer.flush()?;
 
         let cur_offset = self.writer.seek(SeekFrom::End(0))?;
@@ -81,7 +83,7 @@ impl KvsEngine for KvStore {
                 let reader = self.readers.get_mut(&pointer.file_id).unwrap();
                 reader.seek(SeekFrom::Start(pointer.offset))?;
                 let cmd_reader = reader.take(pointer.len);
-                if let Command::Set { value, .. } = serde_json::from_reader(cmd_reader)? {
+                if let Command::Set { value, .. } = serde_cbor::from_reader(cmd_reader)? {
                     Ok(Some(value))
                 } else {
                     Err(KvsError::UnexpectedCommandType)
@@ -103,7 +105,11 @@ impl KvsEngine for KvStore {
             let offset = self.writer.seek(SeekFrom::End(0))?;
 
             let cmd = Command::Remove { key: key.clone() };
-            serde_json::to_writer(&mut self.writer, &cmd)?;
+
+            cmd.serialize(
+                &mut serde_cbor::Serializer::new(&mut IoWrite::new(&mut self.writer))
+                    .packed_format(),
+            )?;
             self.writer.flush()?;
 
             self.index.remove(&key);
@@ -233,7 +239,7 @@ impl KvStore {
         file_id: u64,
     ) -> Result<u64> {
         let mut pre_offset = reader.seek(SeekFrom::Start(0))?;
-        let mut iterator = serde_json::Deserializer::from_reader(reader).into_iter::<Command>();
+        let mut iterator = serde_cbor::Deserializer::from_reader(reader).into_iter::<Command>();
         while let Some(cmd) = iterator.next() {
             let offset = iterator.byte_offset() as u64;
             match cmd? {

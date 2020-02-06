@@ -11,13 +11,13 @@ pub enum KvsError {
     #[fail(display = "{}", _0)]
     Io(#[cause] io::Error),
 
-    /// Serialization for serde_json or deserialization error.
-    #[fail(display = "{}", _0)]
-    Serde(#[cause] serde_json::Error),
-
     /// Serialization for bincode or deserialization error.
     #[fail(display = "{}", _0)]
     Bincode(#[cause] bincode::Error),
+
+    /// Serialization for serde_cbor or deserialization error.
+    #[fail(display = "{}", _0)]
+    Cbor(#[cause] serde_cbor::Error),
 
     /// Key or value is invalid UTF-8 sequence
     #[fail(display = "UTF-8 error: {}", _0)]
@@ -50,15 +50,15 @@ impl From<io::Error> for KvsError {
     }
 }
 
-impl From<serde_json::Error> for KvsError {
-    fn from(e: serde_json::Error) -> Self {
-        KvsError::Serde(e)
-    }
-}
-
 impl From<bincode::Error> for KvsError {
     fn from(e: bincode::Error) -> Self {
         KvsError::Bincode(e)
+    }
+}
+
+impl From<serde_cbor::Error> for KvsError {
+    fn from(e: serde_cbor::Error) -> Self {
+        KvsError::Cbor(e)
     }
 }
 
