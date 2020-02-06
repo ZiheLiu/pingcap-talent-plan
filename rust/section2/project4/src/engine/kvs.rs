@@ -29,7 +29,7 @@ pub struct KvStore {
 }
 
 impl KvsEngine for KvStore {
-    /// Sets the value of `key` with a string `value`.
+    /// Set the value of `key` with a string `value`.
     ///
     /// If the `key` already exists, the value of it will be overwritten by the string `value`.
     ///
@@ -70,9 +70,9 @@ impl KvsEngine for KvStore {
         Ok(())
     }
 
-    /// Gets the value of a `key`.
+    /// Get the value of a `key`.
     ///
-    /// Returns None, if the `key` does not exist.
+    /// Return None, if the `key` does not exist.
     ///
     /// # Errors
     ///
@@ -93,7 +93,7 @@ impl KvsEngine for KvStore {
         }
     }
 
-    /// Removes a given `key`.
+    /// Remove a given `key`.
     ///
     /// # Errors
     ///
@@ -130,7 +130,7 @@ impl KvsEngine for KvStore {
 }
 
 impl KvStore {
-    /// Opens a `KvStore` with the given path.
+    /// Open a `KvStore` with the given path.
     ///
     /// It will create all the path, if the path does not exist.
     ///
@@ -164,10 +164,10 @@ impl KvStore {
         })
     }
 
-    /// Compacts all log files into one file.
+    /// Compact all log files into one file.
     ///
-    /// Writes compacted set commands into the log file with id `self.cur_file_id + 1` using index.
-    /// Changes current file with id from `self.cur_file_id` to `self.cur_file_id + 2`.
+    /// Write compacted set commands into the log file with id `self.cur_file_id + 1` using index.
+    /// Change current file with id from `self.cur_file_id` to `self.cur_file_id + 2`.
     ///
     /// # Errors
     ///
@@ -215,7 +215,7 @@ impl KvStore {
         Ok(())
     }
 
-    /// Inserts file reader ("self.path/<file_id>.log")) to readers.
+    /// Insert file reader ("self.path/<file_id>.log")) to readers.
     ///
     /// # Errors
     ///
@@ -228,7 +228,7 @@ impl KvStore {
         Ok(())
     }
 
-    /// Loads index from disk into `HashMap` and return the number of read bytes.
+    /// Load index from disk into `HashMap` and return the number of read bytes.
     ///
     /// # Errors
     ///
@@ -259,9 +259,9 @@ impl KvStore {
         Ok(pre_offset)
     }
 
-    /// Gets sorted file id list in the given path.
+    /// Get sorted file id list in the given path.
     ///
-    /// Searches files with pattern "<file_id>.log" and return the sorted file_id list.
+    /// Search files with pattern "<file_id>.log" and return the sorted file_id list.
     ///
     /// # Errors
     ///
@@ -282,7 +282,7 @@ impl KvStore {
         Ok(file_ids)
     }
 
-    /// Creates new log file ("path/<file_id>.log") writer.
+    /// Create new log file ("path/<file_id>.log") writer.
     ///
     /// # Errors
     ///

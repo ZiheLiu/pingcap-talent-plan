@@ -6,11 +6,7 @@ pub struct SledKvsEngine {
 }
 
 impl SledKvsEngine {
-    /// Opens a sled db with the given path.
-    ///
-    /// # Errors
-    ///
-    /// It propagates sled errors.
+    /// Open a `KvStore` with the given path.
     pub fn open(path: &std::path::Path) -> Result<SledKvsEngine> {
         let tree = sled::open(path)?;
         Ok(SledKvsEngine { tree })

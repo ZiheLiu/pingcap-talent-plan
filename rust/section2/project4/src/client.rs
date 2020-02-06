@@ -8,21 +8,13 @@ pub struct KvsClient {
 }
 
 impl KvsClient {
-    /// Creates a new `KvsClient`.
-    ///
-    /// # Errors
-    ///
-    /// It propagates I/O errors.
+    /// Create a new `KvsClient`.
     pub fn new(addr: net::SocketAddr) -> Result<KvsClient> {
         let stream = net::TcpStream::connect(addr)?;
         Ok(KvsClient { stream })
     }
 
-    /// Sends set command to the server.
-    ///
-    /// # Errors
-    ///
-    /// It propagates bincode serialization and deserialization errors.
+    /// Send set command to the server.
     pub fn set(&mut self, key: String, value: String) -> Result<()> {
         let command = Request::Set { key, value };
         bincode::serialize_into(&mut self.stream, &command)?;
@@ -31,11 +23,7 @@ impl KvsClient {
         Result::from(res)
     }
 
-    /// Sends get command to the server.
-    ///
-    /// # Errors
-    ///
-    /// It propagates bincode serialization and deserialization errors.
+    /// Send get command to the server.
     pub fn get(&mut self, key: String) -> Result<Option<String>> {
         let command = Request::Get { key };
         bincode::serialize_into(&mut self.stream, &command)?;
@@ -44,11 +32,7 @@ impl KvsClient {
         Result::from(res)
     }
 
-    /// Sends remove command to the server.
-    ///
-    /// # Errors
-    ///
-    /// It propagates bincode serialization and deserialization errors.
+    /// Send remove command to the server.
     pub fn remove(&mut self, key: String) -> Result<()> {
         let command = Request::Remove { key };
         bincode::serialize_into(&mut self.stream, &command)?;

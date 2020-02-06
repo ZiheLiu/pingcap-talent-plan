@@ -36,12 +36,12 @@ pub enum Response {
 }
 
 impl Response {
-    /// Creates response with the given error message.
+    /// Create response with the given error message.
     pub fn new_error<T: Display>(err: T) -> Response {
         Response::Err(err.to_string())
     }
 
-    /// Creates response with the given message which may be None.
+    /// Create response with the given message which may be None.
     pub fn new_success(msg: Option<String>) -> Response {
         Response::Ok(msg)
     }

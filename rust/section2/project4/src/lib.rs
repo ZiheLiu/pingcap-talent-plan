@@ -1,6 +1,6 @@
 #![deny(missing_docs)]
 
-//! A simple key/value store persistent in memory.
+//! A simple key/value store in memory.
 
 pub use client::KvsClient;
 pub use common::{Request, Response};

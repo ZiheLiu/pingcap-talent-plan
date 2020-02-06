@@ -11,20 +11,12 @@ pub struct KvsServer<T: KvsEngine> {
 }
 
 impl<T: KvsEngine> KvsServer<T> {
-    /// Creates a new `KvsServer`.
+    /// Create a new `KvsServer`.
     pub fn new(addr: net::SocketAddr, engine: T) -> KvsServer<T> {
         KvsServer { addr, engine }
     }
 
-    /// Creates tcp server to listen on the given addr.
-    ///
-    /// It accepts connections in the main loop.
-    /// After accepting connection, it read bytes from tcp stream and deserialize it into `Command`.
-    /// Then use its engine to deal with this command and responses data or errors from engine.
-    ///
-    /// # Errors
-    ///
-    /// It propagates I/O, or bincode serialization and deserialization errors.
+    /// Create tcp server to listen on the given addr.
     pub fn start(&mut self) -> Result<()> {
         let listener = net::TcpListener::bind(self.addr)?;
         for stream in listener.incoming() {

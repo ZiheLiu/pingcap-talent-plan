@@ -44,7 +44,7 @@ const DEFAULT_ENGINE: EngineType = EngineType::kvs;
 const CONFIG_FILENAME: &str = "engine_config";
 
 impl EngineType {
-    /// Gets the previous engine type from disk.
+    /// Get the previous engine type from disk.
     ///
     /// If the `CONFIG_FILENAME` file exists and the content is valid `Engine`, return it.
     /// Otherwise, return None.
@@ -67,7 +67,7 @@ impl EngineType {
         }
     }
 
-    /// Checks the given engine with the previous engine and return it.
+    /// Check the given engine with the previous engine and return it.
     ///
     /// If the previous engine exists, the given engine must be same as it.
     /// Otherwise, return `WrongEngineType` error.
@@ -95,7 +95,7 @@ impl EngineType {
         }
     }
 
-    /// Dumps the engine config into disk.
+    /// Dump the engine config into disk.
     ///
     /// # Errors
     ///
